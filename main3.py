@@ -235,6 +235,9 @@ async def verify_webhook(mode: str = Query(None, alias="hub.mode"), token: str =
     if mode == "subscribe" and token == VERIFY_TOKEN:
         return Response(content=challenge, media_type="text/plain")
     return Response(content="Verification failed", status_code=403)
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": str(datetime.now())}
 
 @app.post("/webhook")
 async def receive_message(request: Request):
