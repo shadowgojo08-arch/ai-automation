@@ -2,3 +2,14 @@ credentials.json
 main.py
 main2.py
 test.py
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.vscode/
+.DS_Store
