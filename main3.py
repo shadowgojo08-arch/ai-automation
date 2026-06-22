@@ -98,6 +98,11 @@ async def home():
                 color: #00bcff;
                 text-decoration: none;
             }
+            .policy-link {
+                margin-top: 15px;
+                font-size: 12px;
+                display: block;
+            }
         </style>
     </head>
     <body>
@@ -121,8 +126,58 @@ async def home():
 
             <div class="footer-info">
                 <p style="margin-bottom: 6px;"><strong>Legal Entity:</strong> Govt. of India MSME (Udyam) Registered</p>
-                <p><strong>Corporate Correspondence:</strong> <a href="mailto:dsecure.ai@gmail.com">dsecure.ai@gmail.com</a></p>
+                <p style="margin-bottom: 6px;"><strong>Corporate Correspondence:</strong> <a href="mailto:dsecure.ai@gmail.com">dsecure.ai@gmail.com</a></p>
+                <a href="/privacy" class="policy-link">Privacy Policy & Data Security Compliance</a>
             </div>
+        </div>
+    </body>
+    </html>
+    """
+
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_policy():
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Privacy Policy | Dalynx Automations</title>
+        <style>
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background-color: #060913; color: #cbd5e1; line-height: 1.7; padding: 40px 20px;
+            }
+            .wrapper { max-width: 750px; margin: 0 auto; background: #0b1120; padding: 40px; border-radius: 12px; border: 1px solid #1e293b; }
+            h1 { color: #00ffcc; font-size: 26px; margin-bottom: 10px; }
+            h2 { color: #00bcff; font-size: 18px; margin-top: 30px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
+            p, li { font-size: 15px; color: #94a3b8; }
+            ul { padding-left: 20px; margin-top: 10px; }
+            .date { font-style: italic; color: #64748b; margin-bottom: 30px; }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Privacy Policy</h1>
+            <div class="date">Last Updated: June 18, 2026</div>
+            
+            <p>Dalynx Automations ("we," "our," or "us") operates enterprise-grade automated workflow pipelines and AI conversational utilities. This Privacy Policy details our operational data architecture and strict practices regarding information security handling for our conversational communication application integrations through Meta's WhatsApp Business Platform API.</p>
+
+            <h2>1. Information We Process</h2>
+            <p>To deliver real-time infrastructure automation, our systems temporarily ingest user interactions sent via webhooks. This includes:</p>
+            <ul>
+                <li><strong>Communication Metadata:</strong> Phone number information of incoming communication strings to establish chat session pathways.</li>
+                <li><strong>Message Content:</strong> Text strings sent to our system instances to dynamically construct and stream intelligent context-aware replies via large language models.</li>
+            </ul>
+
+            <h2>2. Data Retention Policy</h2>
+            <p>To preserve interaction memory seamlessly across client communication milestones without unnecessary exposure, transactional session transcripts are isolated within security-tight database nodes. Data logs can be cleared programmatically using explicit programmatic instructions ("RESET" signals) at any time.</p>
+
+            <h2>3. Third-Party Protocols & Security</h2>
+            <p>We do not aggregate, sell, or farm identity indices. System interaction points process context solely alongside secure endpoint infrastructure providers, specifically Meta platforms and secure AI compute backends (OpenAI API profiles), which maintain robust compliance models.</p>
+
+            <h2>4. Corporate Contact Details</h2>
+            <p>For questions or formal data inquiries concerning Dalynx Automations compliance policies, connect directly with our legal point of contact at: <a href="mailto:dsecure.ai@gmail.com" style="color: #00bcff; text-decoration: none;">dsecure.ai@gmail.com</a>.</p>
         </div>
     </body>
     </html>
