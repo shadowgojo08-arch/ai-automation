@@ -30,7 +30,7 @@ async def home():
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                background-color: #060913; 
+                background-color: #040711; 
                 color: #f7fafc; 
                 display: flex; 
                 justify-content: center; 
@@ -41,68 +41,77 @@ async def home():
             .container {
                 max-width: 650px;
                 width: 100%;
-                background: linear-gradient(145deg, #0b1120, #070c17);
+                background: linear-gradient(145deg, #090f20, #050914);
                 border: 1px solid #1e293b;
-                border-radius: 16px;
-                padding: 40px;
+                border-radius: 20px;
+                padding: 50px 40px;
                 text-align: center;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
             }
             .logo-text {
-                font-size: 28px;
-                font-weight: 800;
-                letter-spacing: 4px;
+                font-size: 32px;
+                font-weight: 900;
+                letter-spacing: 5px;
                 background: linear-gradient(to right, #00ffcc, #00bcff);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
-                margin-bottom: 8px;
+                margin-bottom: 12px;
             }
             .tagline {
-                color: #94a3b8;
-                font-size: 16px;
-                letter-spacing: 1px;
-                margin-bottom: 30px;
+                color: #64748b;
+                font-size: 13px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                margin-bottom: 35px;
                 text-transform: uppercase;
             }
             .divider {
                 height: 1px;
                 background: linear-gradient(to right, transparent, #1e293b, transparent);
-                margin: 20px 0;
+                margin: 25px 0;
             }
             .section {
                 text-align: left;
-                margin-bottom: 25px;
+                margin-bottom: 30px;
             }
             .section h3 {
                 color: #00ffcc;
-                font-size: 14px;
+                font-size: 12px;
+                font-weight: 700;
                 text-transform: uppercase;
-                letter-spacing: 1px;
-                margin-bottom: 10px;
+                letter-spacing: 1.5px;
+                margin-bottom: 12px;
             }
             .section p {
-                color: #cbd5e1;
+                color: #94a3b8;
                 font-size: 15px;
-                line-height: 1.6;
+                line-height: 1.7;
             }
             .footer-info {
-                margin-top: 35px;
+                margin-top: 40px;
                 font-size: 13px;
-                color: #64748b;
-                background: #090f1d;
-                padding: 15px;
-                border-radius: 8px;
+                color: #475569;
+                background: #060b18;
+                padding: 20px;
+                border-radius: 12px;
                 border: 1px solid #111827;
+                text-align: left;
             }
+            .footer-info p { margin-bottom: 8px; }
+            .footer-info p:last-child { margin-bottom: 0; }
             .footer-info a {
                 color: #00bcff;
                 text-decoration: none;
             }
-            .policy-link {
-                margin-top: 15px;
-                font-size: 12px;
-                display: block;
+            .privacy-link {
+                display: inline-block;
+                margin-top: 20px;
+                font-size: 13px;
+                color: #64748b;
+                text-decoration: none;
+                transition: color 0.2s;
             }
+            .privacy-link:hover { color: #00ffcc; }
         </style>
     </head>
     <body>
@@ -125,17 +134,18 @@ async def home():
             <div class="divider"></div>
 
             <div class="footer-info">
-                <p style="margin-bottom: 6px;"><strong>Legal Entity:</strong> Govt. of India MSME (Udyam) Registered</p>
-                <p style="margin-bottom: 6px;"><strong>Corporate Correspondence:</strong> <a href="mailto:dsecure.ai@gmail.com">dsecure.ai@gmail.com</a></p>
-                <a href="/privacy" class="policy-link">Privacy Policy & Data Security Compliance</a>
+                <p><strong>Legal Entity:</strong> Govt. of India MSME (Udyam) Registered</p>
+                <p><strong>Corporate Correspondence:</strong> <a href="mailto:dsecure.ai@gmail.com">dsecure.ai@gmail.com</a></p>
             </div>
+
+            <a href="/privacy" class="privacy-link">Privacy Policy & Data Protection</a>
         </div>
     </body>
     </html>
     """
 
 @app.get("/privacy", response_class=HTMLResponse)
-async def privacy_policy():
+async def privacy():
     return """
     <!DOCTYPE html>
     <html lang="en">
@@ -145,39 +155,58 @@ async def privacy_policy():
         <title>Privacy Policy | Dalynx Automations</title>
         <style>
             body { 
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                background-color: #060913; color: #cbd5e1; line-height: 1.7; padding: 40px 20px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+                background-color: #040711; 
+                color: #cbd5e1; 
+                line-height: 1.7;
+                padding: 40px 20px;
             }
-            .wrapper { max-width: 750px; margin: 0 auto; background: #0b1120; padding: 40px; border-radius: 12px; border: 1px solid #1e293b; }
-            h1 { color: #00ffcc; font-size: 26px; margin-bottom: 10px; }
-            h2 { color: #00bcff; font-size: 18px; margin-top: 30px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
-            p, li { font-size: 15px; color: #94a3b8; }
-            ul { padding-left: 20px; margin-top: 10px; }
-            .date { font-style: italic; color: #64748b; margin-bottom: 30px; }
+            .privacy-container {
+                max-width: 750px;
+                margin: 0 auto;
+                background: #090f20;
+                border: 1px solid #1e293b;
+                border-radius: 16px;
+                padding: 40px;
+            }
+            h1 { color: #ffffff; font-size: 28px; margin-bottom: 10px; font-weight: 800; }
+            h2 { color: #00ffcc; font-size: 18px; margin-top: 30px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+            p, li { color: #94a3b8; font-size: 15px; margin-bottom: 15px; }
+            ul { margin-left: 20px; margin-bottom: 20px; }
+            .date { color: #64748b; font-size: 13px; margin-bottom: 30px; }
+            a { color: #00bcff; text-decoration: none; }
+            .back-btn { display: inline-block; margin-top: 30px; color: #64748b; text-decoration: none; font-size: 14px; }
+            .back-btn:hover { color: #ffffff; }
         </style>
     </head>
     <body>
-        <div class="wrapper">
+        <div class="privacy-container">
             <h1>Privacy Policy</h1>
-            <div class="date">Last Updated: June 18, 2026</div>
+            <div class="date">Last Updated: June 22, 2026</div>
             
-            <p>Dalynx Automations ("we," "our," or "us") operates enterprise-grade automated workflow pipelines and AI conversational utilities. This Privacy Policy details our operational data architecture and strict practices regarding information security handling for our conversational communication application integrations through Meta's WhatsApp Business Platform API.</p>
+            <p>Welcome to Dalynx Automations. We respect your privacy and are committed to protecting data processed through our custom AI architecture, webhook integrations, and client communications systems.</p>
+            
+            <h2>1. Information We Collect</h2>
+            <p>In operating our automated enterprise services and custom communications tools (including our WhatsApp Business API integration setups), we temporarily ingest text-based interaction data strictly to facilitate intended workflows. This data is managed directly via encrypted databases and secure communication endpoints.</p>
 
-            <h2>1. Information We Process</h2>
-            <p>To deliver real-time infrastructure automation, our systems temporarily ingest user interactions sent via webhooks. This includes:</p>
+            <h2>2. How We Use Data</h2>
+            <p>Data handled by our systems is utilized exclusively to:</p>
             <ul>
-                <li><strong>Communication Metadata:</strong> Phone number information of incoming communication strings to establish chat session pathways.</li>
-                <li><strong>Message Content:</strong> Text strings sent to our system instances to dynamically construct and stream intelligent context-aware replies via large language models.</li>
+                <li>Maintain multi-tenant operational memory during communication workflows.</li>
+                <li>Process contextual information required to generate responsive AI output.</li>
+                <li>Track basic performance matrix attributes as configured by our direct corporate clients.</li>
             </ul>
 
-            <h2>2. Data Retention Policy</h2>
-            <p>To preserve interaction memory seamlessly across client communication milestones without unnecessary exposure, transactional session transcripts are isolated within security-tight database nodes. Data logs can be cleared programmatically using explicit programmatic instructions ("RESET" signals) at any time.</p>
+            <h2>3. Data Retentions and Security</h2>
+            <p>We do not lease, trade, or distribute your information to unauthorized marketing aggregators. All communication history elements are secured within database structures with restricted accessibility profiles, matching our commitment to technical security and system architecture standards.</p>
 
-            <h2>3. Third-Party Protocols & Security</h2>
-            <p>We do not aggregate, sell, or farm identity indices. System interaction points process context solely alongside secure endpoint infrastructure providers, specifically Meta platforms and secure AI compute backends (OpenAI API profiles), which maintain robust compliance models.</p>
+            <h2>4. Third-Party Webhook Data Processing</h2>
+            <p>Our automation engines hook safely into secure third-party communication layers (such as Meta API structures and cloud system instances). Any data handled over these channels is subject to the security guardrails outlined by their respective parent infrastructure organizations.</p>
 
-            <h2>4. Corporate Contact Details</h2>
-            <p>For questions or formal data inquiries concerning Dalynx Automations compliance policies, connect directly with our legal point of contact at: <a href="mailto:dsecure.ai@gmail.com" style="color: #00bcff; text-decoration: none;">dsecure.ai@gmail.com</a>.</p>
+            <h2>5. Contact Us</h2>
+            <p>For official inquiries concerning individual system memory purges, data structural queries, or general security compliance, drop a message to our operations desk at: <a href="mailto:dsecure.ai@gmail.com">dsecure.ai@gmail.com</a></p>
+            
+            <a href="/" class="back-btn">&larr; Return to Home</a>
         </div>
     </body>
     </html>
