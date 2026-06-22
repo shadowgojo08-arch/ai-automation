@@ -15,6 +15,30 @@ import asyncpg
 load_dotenv()
 
 app = FastAPI()
+from fastapi.responses import HTMLResponse
+
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    return """
+    <html>
+        <head>
+            <title>Dalynx Automations</title>
+            <style>
+                body { font-family: 'Arial', sans-serif; background-color: #0a0f1c; color: #ffffff; text-align: center; padding-top: 100px; }
+                h1 { color: #00ffcc; letter-spacing: 2px; }
+                p { color: #a0aec0; font-size: 18px; }
+            </style>
+        </head>
+        <body>
+            <h1>DALYNX AUTOMATIONS</h1>
+            <p>Next-Generation AI & Enterprise Automation Infrastructure</p>
+            <br>
+            <p><i>Official Meta Business Verification Page</i></p>
+            <p>Registration: MSME Udyam Verified</p>
+            <p>Contact: your-email@gmail.com</p>
+        </body>
+    </html>
+    """
 
 # --- CONFIGURATION ---
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "")
