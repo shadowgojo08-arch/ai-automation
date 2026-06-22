@@ -20,23 +20,111 @@ from fastapi.responses import HTMLResponse
 @app.get("/", response_class=HTMLResponse)
 async def home():
     return """
-    <html>
-        <head>
-            <title>Dalynx Automations</title>
-            <style>
-                body { font-family: 'Arial', sans-serif; background-color: #0a0f1c; color: #ffffff; text-align: center; padding-top: 100px; }
-                h1 { color: #00ffcc; letter-spacing: 2px; }
-                p { color: #a0aec0; font-size: 18px; }
-            </style>
-        </head>
-        <body>
-            <h1>DALYNX AUTOMATIONS</h1>
-            <p>Next-Generation AI & Enterprise Automation Infrastructure</p>
-            <br>
-            <p><i>Official Meta Business Verification Page</i></p>
-            <p>Registration: MSME Udyam Verified</p>
-            <p>Contact: your-email@gmail.com</p>
-        </body>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dalynx Automations | Enterprise AI Infrastructure</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                background-color: #060913; 
+                color: #f7fafc; 
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                min-height: 100vh;
+                padding: 20px;
+            }
+            .container {
+                max-width: 650px;
+                width: 100%;
+                background: linear-gradient(145deg, #0b1120, #070c17);
+                border: 1px solid #1e293b;
+                border-radius: 16px;
+                padding: 40px;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            }
+            .logo-text {
+                font-size: 28px;
+                font-weight: 800;
+                letter-spacing: 4px;
+                background: linear-gradient(to right, #00ffcc, #00bcff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                margin-bottom: 8px;
+            }
+            .tagline {
+                color: #94a3b8;
+                font-size: 16px;
+                letter-spacing: 1px;
+                margin-bottom: 30px;
+                text-transform: uppercase;
+            }
+            .divider {
+                height: 1px;
+                background: linear-gradient(to right, transparent, #1e293b, transparent);
+                margin: 20px 0;
+            }
+            .section {
+                text-align: left;
+                margin-bottom: 25px;
+            }
+            .section h3 {
+                color: #00ffcc;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 10px;
+            }
+            .section p {
+                color: #cbd5e1;
+                font-size: 15px;
+                line-height: 1.6;
+            }
+            .footer-info {
+                margin-top: 35px;
+                font-size: 13px;
+                color: #64748b;
+                background: #090f1d;
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid #111827;
+            }
+            .footer-info a {
+                color: #00bcff;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo-text">DALYNX AUTOMATIONS</div>
+            <div class="tagline">Next-Gen AI & Workflow Infrastructure</div>
+            
+            <div class="divider"></div>
+            
+            <div class="section">
+                <h3>Our Core Operations</h3>
+                <p>We architect custom artificial intelligence pipelines, multi-tenant customer interaction systems, and automated operational infrastructure for healthcare providers, medical clinics, and enterprise clients globally.</p>
+            </div>
+
+            <div class="section">
+                <h3>Corporate Statement</h3>
+                <p>Dalynx Automations is dedicated to deploying seamless automated intelligence into high-touch market sectors, dramatically accelerating task efficiency and optimizing operational human lifecycles.</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="footer-info">
+                <p style="margin-bottom: 6px;"><strong>Legal Entity:</strong> Govt. of India MSME (Udyam) Registered</p>
+                <p><strong>Corporate Correspondence:</strong> <a href="mailto:dsecure.ai@gmail.com">dsecure.ai@gmail.com</a></p>
+            </div>
+        </div>
+    </body>
     </html>
     """
 
