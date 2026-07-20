@@ -359,7 +359,7 @@ def check_and_send_followups():
                 cursor.execute("SELECT owner_name FROM clinics WHERE clinic_id = %s", (clinic_id,))
                 res_clinic = cursor.fetchone()
                 owner_name = res_clinic['owner_name'] if res_clinic else "Doctor"
-                clinic_name = res_clinic['owner_name'] if res_clinic else "Doctor"
+                clinic_name = res_clinic['clinic_id'] if res_clinic else "Doctor"
                 cursor.execute("SELECT patient_context FROM user_sessions WHERE phone = %s", (phone,))
                 res_session = cursor.fetchone()
                 patient_context = res_session['patient_context'] if (res_session and res_session['patient_context']) else "a general dental inquiry"
@@ -460,12 +460,13 @@ async def receive_message(request: Request):
                     return {"status": "reset_success"}
                 
                 # --- PHASE 1: SEAMLESS QR CODE INITIATION ---
+                #put clinic name in capital letters
                 detected_clinic = None
                 if "DEMO_MATHURAJMER" in clean_text:
                     detected_clinic = "MATHUR_AJMER"
                 elif "DEMO_SHARMADELHI" in clean_text:
                     detected_clinic = "SHARMA_DELHI"
-                elif "book a consultation at SKIN111" in clean_text:
+                elif "BOOK A CONSULTATION AT SKIN111" in clean_text:
                     detected_clinic = "skin111"
                 if detected_clinic:
                     clinic_data = await get_clinic_data(detected_clinic)
