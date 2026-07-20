@@ -359,14 +359,14 @@ def check_and_send_followups():
                 cursor.execute("SELECT owner_name FROM clinics WHERE clinic_id = %s", (clinic_id,))
                 res_clinic = cursor.fetchone()
                 owner_name = res_clinic['owner_name'] if res_clinic else "Doctor"
-                
+                clinic_name = res_clinic['owner_name'] if res_clinic else "Doctor"
                 cursor.execute("SELECT patient_context FROM user_sessions WHERE phone = %s", (phone,))
                 res_session = cursor.fetchone()
                 patient_context = res_session['patient_context'] if (res_session and res_session['patient_context']) else "a general dental inquiry"
                 conn.close()
 
                 # Generate the custom message using OpenAI
-                ai_prompt = f"You are the AI receptionist for {owner_name}. Write a friendly, empathetic 2-sentence WhatsApp follow-up to a patient who complained about '{patient_context}' 3 days ago but never booked. Ask if they are still experiencing it and offer to get them slotted in today."
+                ai_prompt = f"You are the AI receptionist for {clinic_name}. Write a friendly, empathetic 2-sentence WhatsApp follow-up to a patient/client who complained/enquired about '{patient_context}' 3 days ago but never booked. Ask if they are still experiencing it and offer to get them slotted in today."
                 
                 res = sync_client.chat.completions.create(
                     model="gpt-4o-mini",
@@ -465,7 +465,8 @@ async def receive_message(request: Request):
                     detected_clinic = "MATHUR_AJMER"
                 elif "DEMO_SHARMADELHI" in clean_text:
                     detected_clinic = "SHARMA_DELHI"
-                
+                elif "book a consultation at SKIN111" in clean_text:
+                    detected_clinic = "skin111"
                 if detected_clinic:
                     clinic_data = await get_clinic_data(detected_clinic)
                     if not clinic_data:
