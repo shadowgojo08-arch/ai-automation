@@ -266,7 +266,7 @@ async def extract_and_save_context(phone: str, history: list):
     """Silently reads the chat history to figure out what issue the patient has."""
     try:
         extraction_prompt = [
-            {"role": "system", "content": "Analyze this chat history. What is the patient's primary dental complaint? Answer in 1 to 4 words only (e.g., 'Severe toothache', 'Bleeding gums', 'Root canal'). If unknown, reply 'General dental checkup'."},
+            {"role": "system", "content": "Analyze this chat history. What is the patient's primary enquiry or complaint? Answer in 1 to 6 words only (e.g., 'botox', 'spa treatment', 'derma filler'). If unknown, reply 'General inquiry' .always attach the name of patient if mentioned in the chat history. If not, just give the issue."},
             {"role": "user", "content": str(history)}
         ]
         response = await client.chat.completions.create(
@@ -366,7 +366,7 @@ def check_and_send_followups():
                 conn.close()
 
                 # Generate the custom message using OpenAI
-                ai_prompt = f"You are the AI receptionist for {clinic_name}. Write a friendly, empathetic 2-sentence WhatsApp follow-up to a patient/client who complained/enquired about '{patient_context}' 3 days ago but never booked. Ask if they are still experiencing it and offer to get them slotted in today."
+                ai_prompt = f"You are the AI receptionist for {clinic_name}. Write a friendly, empathetic 2-sentence WhatsApp follow-up to a patient/client who complained/enquired about '{patient_context}' 3 days ago but never booked. Ask if they are still experiencing it and offer to get them slotted"
                 
                 res = sync_client.chat.completions.create(
                     model="gpt-4o-mini",
