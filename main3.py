@@ -422,7 +422,7 @@ def send_whatsapp_message(to_phone, text_body):
 @app.on_event("startup")
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(check_and_send_followups, 'cron', hour=13, minute=23) # Adjust time as needed
+    scheduler.add_job(check_and_send_followups, 'cron', hour=13, minute=40) # Adjust time as needed
     scheduler.start()
 
 # --- WEBHOOK ENDPOINTS ---
