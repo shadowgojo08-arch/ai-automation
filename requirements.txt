@@ -9,3 +9,4 @@ asyncpg
 psycopg2-binary
 python-dotenv
 requests
+tzdata==2023.3
