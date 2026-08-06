@@ -9,13 +9,14 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import asyncio
 from datetime import datetime
+from zoneinfo import ZoneInfo # Added for strict timezone control
 from apscheduler.schedulers.background import BackgroundScheduler
 import asyncpg
+from fastapi.responses import HTMLResponse
 
 load_dotenv()
 
 app = FastAPI()
-from fastapi.responses import HTMLResponse
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -289,7 +290,8 @@ def update_sales_tracker(phone, clinic_id):
         sheet = sheet_client.open("Sales_Tracker").sheet1
         
         records = sheet.get_all_records()
-        today_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # FIXED: Forces UAE Time for Google Sheets logging
+        today_str = datetime.now(ZoneInfo("Asia/Dubai")).strftime("%Y-%m-%d %H:%M:%S")
         clean_target_phone = str(phone).replace("+", "").replace(" ", "").strip()
         
         cell_found = False
@@ -324,7 +326,8 @@ def check_and_send_followups():
         sheet = sheet_client.open("Sales_Tracker").sheet1
         records = sheet.get_all_records()
         
-        now = datetime.now()
+        # FIXED: Evaluates the exact current time in Dubai
+        now = datetime.now(ZoneInfo("Asia/Dubai"))
         
         for i, row in enumerate(records):
             phone = str(row.get('Phone', ''))
@@ -336,7 +339,8 @@ def check_and_send_followups():
                 continue
                 
             try:
-                start_date = datetime.strptime(start_date_str, "%Y-%m-%d %H:%M:%S")
+                # FIXED: Parses the string and attaches the Dubai timezone for accurate subtraction
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo("Asia/Dubai"))
             except ValueError:
                 continue
 
@@ -421,8 +425,9 @@ def send_whatsapp_message(to_phone, text_body):
 
 @app.on_event("startup")
 def start_scheduler():
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(check_and_send_followups, 'cron', hour=13, minute=48) # Adjust time as needed
+    # FIXED: Lock scheduler to UAE timezone and run at exactly 10:30 AM GST
+    scheduler = BackgroundScheduler(timezone=ZoneInfo("Asia/Dubai"))
+    scheduler.add_job(check_and_send_followups, 'cron', hour=10, minute=30) 
     scheduler.start()
 
 # --- WEBHOOK ENDPOINTS ---
