@@ -348,7 +348,7 @@ def check_and_send_followups():
             row_num = i + 2
             
             # --- DAY 3 AI FOLLOW-UP GENERATION ---
-            if days_passed == 3 and status == "Started":
+            if days_passed == 0 and status == "Started":
                 print(f"-> GENERATING CUSTOM DAY 3 FOLLOW-UP FOR: {phone}")
                 
                 # Connect to DB synchronously to get the patient's specific context
@@ -427,7 +427,7 @@ def send_whatsapp_message(to_phone, text_body):
 def start_scheduler():
     # FIXED: Lock scheduler to UAE timezone and run at exactly 10:30 AM GST
     scheduler = BackgroundScheduler(timezone=ZoneInfo("Asia/Dubai"))
-    scheduler.add_job(check_and_send_followups, 'cron', hour=18, minute=19) 
+    scheduler.add_job(check_and_send_followups, 'cron', hour=18, minute=32) 
     scheduler.start()
 
 # --- WEBHOOK ENDPOINTS ---
