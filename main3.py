@@ -427,7 +427,7 @@ def send_whatsapp_message(to_phone, text_body):
 def start_scheduler():
     # FIXED: Lock scheduler to UAE timezone and run at exactly 10:30 AM GST
     scheduler = BackgroundScheduler(timezone=ZoneInfo("Asia/Dubai"))
-    scheduler.add_job(check_and_send_followups, 'cron', hour=18, minute=12) 
+    scheduler.add_job(check_and_send_followups, 'cron', hour=18, minute=19) 
     scheduler.start()
 
 # --- WEBHOOK ENDPOINTS ---
