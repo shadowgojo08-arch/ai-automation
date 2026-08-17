@@ -3,13 +3,13 @@ import json
 from fastapi import FastAPI, Request, Response, Query
 import httpx
 from openai import AsyncOpenAI
-import openai # For the synchronous background scheduler
+import openai 
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import asyncio
 from datetime import datetime
-from zoneinfo import ZoneInfo # Added for strict timezone control
+from zoneinfo import ZoneInfo 
 from apscheduler.schedulers.background import BackgroundScheduler
 import asyncpg
 from fastapi.responses import HTMLResponse
@@ -264,7 +264,6 @@ async def delete_user_session(phone: str):
 
 # --- BACKGROUND AI TASK: COMPLAINT EXTRACTION ---
 async def extract_and_save_context(phone: str, history: list):
-    """Silently reads the chat history to figure out what issue the patient has."""
     try:
         extraction_prompt = [
             {"role": "system", "content": "Analyze this chat history. What is the patient's primary enquiry or complaint? Answer in 1 to 6 words only (e.g., 'botox', 'spa treatment', 'derma filler'). If unknown, reply 'General inquiry' .always attach the name of patient if mentioned in the chat history. If not, just give the issue."},
@@ -290,7 +289,6 @@ def update_sales_tracker(phone, clinic_id):
         sheet = sheet_client.open("Sales_Tracker").sheet1
         
         records = sheet.get_all_records()
-        # FIXED: Forces UAE Time for Google Sheets logging
         today_str = datetime.now(ZoneInfo("Asia/Dubai")).strftime("%Y-%m-%d %H:%M:%S")
         clean_target_phone = str(phone).replace("+", "").replace(" ", "").strip()
         
@@ -316,9 +314,9 @@ def update_sales_tracker(phone, clinic_id):
     except Exception as e:
         print(f"Sales Tracker Logging Error: {e}")
 
-# --- THE TIME-TRAVELER (AI SALES GENERATOR) ---
+# --- THE TIME-TRAVELER (AI SALES GENERATOR - FAST FORWARD EDITION) ---
 def check_and_send_followups():
-    print("\n--- SCHEDULER WOKE UP: Checking for Day 3 and Day 5 follow-ups ---")
+    print("\n--- SCHEDULER WOKE UP: Checking for 3-Hour and 5-Hour follow-ups ---")
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
@@ -326,7 +324,6 @@ def check_and_send_followups():
         sheet = sheet_client.open("Sales_Tracker").sheet1
         records = sheet.get_all_records()
         
-        # FIXED: Evaluates the exact current time in Dubai
         now = datetime.now(ZoneInfo("Asia/Dubai"))
         
         for i, row in enumerate(records):
@@ -339,19 +336,19 @@ def check_and_send_followups():
                 continue
                 
             try:
-                # FIXED: Parses the string and attaches the Dubai timezone for accurate subtraction
                 start_date = datetime.strptime(start_date_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo("Asia/Dubai"))
             except ValueError:
                 continue
 
-            days_passed = (now - start_date).days
+            # NEW LOGIC: Calculate hours passed instead of days
+            time_diff = now - start_date
+            hours_passed = time_diff.total_seconds() / 3600
             row_num = i + 2
             
-            # --- DAY 3 AI FOLLOW-UP GENERATION ---
-            if days_passed == 0 and status == "Started":
-                print(f"-> GENERATING CUSTOM DAY 3 FOLLOW-UP FOR: {phone}")
+            # --- "DAY 3" FAST-FORWARD TRIGGER (Runs at 3 Hours) ---
+            if hours_passed >= 1 and status == "Started":
+                print(f"-> GENERATING CUSTOM 'DAY 3' FOLLOW-UP FOR: {phone}")
                 
-                # Connect to DB synchronously to get the patient's specific context
                 import psycopg2
                 from psycopg2.extras import RealDictCursor
                 
@@ -359,18 +356,20 @@ def check_and_send_followups():
                 conn = psycopg2.connect(DATABASE_URL)
                 cursor = conn.cursor(cursor_factory=RealDictCursor)
                 
-                # Fetch clinic owner name and extracted context
                 cursor.execute("SELECT owner_name FROM clinics WHERE clinic_id = %s", (clinic_id,))
                 res_clinic = cursor.fetchone()
                 owner_name = res_clinic['owner_name'] if res_clinic else "Doctor"
-                clinic_name = res_clinic['clinic_id'] if res_clinic else "Doctor"
+                
+                # FIXED Key Error: Use variable directly
+                clinic_name = clinic_id if clinic_id else "the clinic"
+                
                 cursor.execute("SELECT patient_context FROM user_sessions WHERE phone = %s", (phone,))
                 res_session = cursor.fetchone()
-                patient_context = res_session['patient_context'] if (res_session and res_session['patient_context']) else "a general dental inquiry"
+                patient_context = res_session['patient_context'] if (res_session and res_session['patient_context']) else "a general inquiry"
                 conn.close()
 
-                # Generate the custom message using OpenAI
-                ai_prompt = f"You are the AI receptionist for {clinic_name}. Write a friendly, empathetic 2-sentence WhatsApp follow-up to a patient/client who complained/enquired about '{patient_context}' 3 days ago but never booked. Ask if they are still experiencing it and offer to get them slotted"
+                # Adjust Prompt to fake the passage of time for the demo
+                ai_prompt = f"You are the AI receptionist for {clinic_name}. Write a friendly, empathetic 2-sentence WhatsApp follow-up to a patient/client who inquired about '{patient_context}'. Pretend that 3 days have passed since they last messaged. Ask if they are still experiencing the issue and offer to get them slotted in today."
                 
                 res = sync_client.chat.completions.create(
                     model="gpt-4o-mini",
@@ -379,20 +378,20 @@ def check_and_send_followups():
                 )
                 generated_followup = res.choices[0].message.content.strip()
 
-                # Wrap it in your Sales Pitch
+                # Sales Pitch Wrapper (Reminds them it's a fast-forwarded demo)
                 sales_pitch = (
-                    f"⏳ *Automated Day 3 Demo Follow-Up*\n\n"
-                    f"Hi {owner_name}! Your AI receptionist remembers exactly what this patient wanted. "
-                    f"If I were talking to them right now, I would automatically send this message to bring them back:\n\n"
+                    f"⏳ *Demo Fast-Forward: 'Day 3' Follow-Up*\n\n"
+                    f"Hi {owner_name}! In a real deployment, your AI receptionist would send this exactly 3 days after a missed lead. "
+                    f"To save you time today, we fast-forwarded the clock. Here is what the bot would automatically text the patient:\n\n"
                     f"💬 _\"{generated_followup}\"_\n\n"
-                    f"Imagine this personal touch running automatically for every single missed lead. Ready to set this up for real?"
+                    f"Imagine this running perfectly in the background for every single missed lead."
                 )
                 
                 send_whatsapp_message(phone, sales_pitch)
                 sheet.update_cell(row_num, 6, "Day 3 Sent")
                 
-            # --- DAY 5 TRIGGER ---
-            elif days_passed == 5 and status == "Day 3 Sent":
+            # --- "DAY 5" FAST-FORWARD TRIGGER (Runs at 5 Hours) ---
+            elif hours_passed >= 5 and status == "Day 3 Sent":
                 import psycopg2
                 conn = psycopg2.connect(DATABASE_URL)
                 cursor = conn.cursor()
@@ -401,7 +400,7 @@ def check_and_send_followups():
                 owner_name = res[0] if res else "Doctor"
                 conn.close()
 
-                msg = f"🚀 *Final Demo Check-In*\n\nHi {owner_name}! Your test bot successfully nurtured this lead for 5 days without you lifting a finger. Let's get this connected to your clinic's actual WhatsApp and start saving you time."
+                msg = f"🚀 *Final Demo Check-In (Fast-Forwarded)*\n\nHi {owner_name}! Your test bot successfully nurtured this lead with multiple touchpoints without you lifting a finger. Let's get this connected to your clinic's actual WhatsApp and start saving you time."
                 send_whatsapp_message(phone, msg)
                 sheet.update_cell(row_num, 6, "Completed")
 
@@ -425,9 +424,9 @@ def send_whatsapp_message(to_phone, text_body):
 
 @app.on_event("startup")
 def start_scheduler():
-    # FIXED: Lock scheduler to UAE timezone and run at exactly 10:30 AM GST
     scheduler = BackgroundScheduler(timezone=ZoneInfo("Asia/Dubai"))
-    scheduler.add_job(check_and_send_followups, 'cron', hour=18, minute=32) 
+    # NEW LOGIC: Runs every 15 minutes to constantly check for leads hitting the 3hr or 5hr mark
+    scheduler.add_job(check_and_send_followups, 'interval', minutes=15) 
     scheduler.start()
 
 # --- WEBHOOK ENDPOINTS ---
@@ -464,8 +463,18 @@ async def receive_message(request: Request):
                     send_whatsapp_message(sender_phone, reset_reply)
                     return {"status": "reset_success"}
                 
+                # --- SECRET GOD MODE TRIGGER ---
+                if clean_text == "TEST":
+                    print("\n[GOD MODE] Forcing scheduler script to run RIGHT NOW...")
+                    try:
+                        check_and_send_followups() 
+                        send_whatsapp_message(sender_phone, "⚙️ Trigger fired! Check Render logs.")
+                    except Exception as e:
+                        print(f"[CRITICAL ERROR in Follow-Up Function]: {e}")
+                        send_whatsapp_message(sender_phone, f"Error: {e}")
+                    return {"status": "test_triggered"}
+                
                 # --- PHASE 1: SEAMLESS QR CODE INITIATION ---
-                #put clinic name in capital letters
                 detected_clinic = None
                 if "DEMO_MATHURAJMER" in clean_text:
                     detected_clinic = "MATHUR_AJMER"
@@ -479,17 +488,14 @@ async def receive_message(request: Request):
                         send_whatsapp_message(sender_phone, "Error: Clinic not found in database.")
                         return {"status": "clinic_not_found"}
 
-                    # Load prompt and pretend the user just said "Hi"
                     new_history = [
                         {"role": "system", "content": clinic_data['system_instruction']},
                         {"role": "user", "content": "Hi"}
                     ]
                     
-                    # Log the start of the demo
                     loop = asyncio.get_event_loop()
                     await loop.run_in_executor(None, update_sales_tracker, sender_phone, detected_clinic)
                     
-                    # Generate the authentic first greeting immediately
                     try:
                         response = await client.chat.completions.create(
                             model="gpt-4o-mini",
@@ -515,17 +521,14 @@ async def receive_message(request: Request):
                     send_whatsapp_message(sender_phone, "Welcome! Please scan your clinic's custom QR code to begin the AI demo.")
                     return {"status": "unauthorized"}
                 
-                # Append user message
                 current_history.append({"role": "user", "content": user_text})
                 
-                # Truncate history
                 if len(current_history) > (MAX_HISTORY * 2 + 1):
                     current_history = [current_history[0]] + current_history[-(MAX_HISTORY * 2):]
                 
                 loop = asyncio.get_event_loop()
                 await loop.run_in_executor(None, update_sales_tracker, sender_phone, active_clinic)
                 
-                # --- CALL OPENAI API ---
                 try:
                     response = await client.chat.completions.create(
                         model="gpt-4o-mini",
@@ -539,7 +542,6 @@ async def receive_message(request: Request):
                     await save_user_session(sender_phone, active_clinic, current_history)
                     send_whatsapp_message(sender_phone, ai_reply)
                     
-                    # --- TRIGGER BACKGROUND EXTRACTION ---
                     asyncio.create_task(extract_and_save_context(sender_phone, current_history))
                     
                 except Exception as e:
