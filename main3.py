@@ -439,6 +439,93 @@ async def verify_webhook(mode: str = Query(None, alias="hub.mode"), token: str =
 async def health_check():
     return {"status": "healthy", "timestamp": str(datetime.now())}
 
+# --- THE BACKGROUND PROCESSOR ---
+async def run_bot_flow(sender_phone, user_text, clean_text):
+    try:
+        # --- SECRET RESET COMMAND ---
+        if clean_text == "RESET":
+            delete_user_session(sender_phone)
+            reset_reply = "System Memory Cleared from Database! Fresh test started. Scan a QR code or type a DEMO keyword to begin again."
+            send_whatsapp_message(sender_phone, reset_reply)
+            return 
+        
+        # --- SECRET GOD MODE TRIGGER ---
+        if clean_text == "TEST":
+            print("\n[GOD MODE] Forcing scheduler script to run RIGHT NOW...")
+            try:
+                check_and_send_followups() 
+                send_whatsapp_message(sender_phone, "⚙️ Trigger fired! Check Render logs.")
+            except Exception as e:
+                send_whatsapp_message(sender_phone, f"Error: {e}")
+            return 
+        
+        # --- PHASE 1: SEAMLESS QR CODE INITIATION ---
+        detected_clinic = None
+        if "DEMO_MATHURAJMER" in clean_text:
+            detected_clinic = "MATHUR_AJMER"
+        elif "DEMO_SHARMADELHI" in clean_text:
+            detected_clinic = "SHARMA_DELHI"
+        elif "BOOK A CONSULTATION AT SKIN111" in clean_text:
+            detected_clinic = "skin111"
+        
+        if detected_clinic:
+            clinic_data = get_clinic_data(detected_clinic)
+            if not clinic_data:
+                send_whatsapp_message(sender_phone, "Error: Clinic not found in database.")
+                return 
+
+            new_history = [
+                {"role": "system", "content": clinic_data['system_instruction']},
+                {"role": "user", "content": "Hi"}
+            ]
+            
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, update_sales_tracker, sender_phone, detected_clinic)
+            
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=new_history,
+                temperature=0.2 
+            )
+            ai_reply = response.choices[0].message.content
+            
+            new_history.append({"role": "assistant", "content": ai_reply})
+            save_user_session(sender_phone, detected_clinic, new_history)
+            send_whatsapp_message(sender_phone, ai_reply)
+            return 
+        
+        # --- PHASE 2: MULTI-TENANT MEMORY ---
+        active_clinic, current_history, _ = get_user_session(sender_phone)
+        
+        if not active_clinic or not current_history:
+            send_whatsapp_message(sender_phone, "Welcome! Please scan your clinic's custom QR code to begin the AI demo.")
+            return 
+        
+        current_history.append({"role": "user", "content": user_text})
+        
+        if len(current_history) > (MAX_HISTORY * 2 + 1):
+            current_history = [current_history[0]] + current_history[-(MAX_HISTORY * 2):]
+        
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, update_sales_tracker, sender_phone, active_clinic)
+        
+        response = await client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=current_history,
+            temperature=0.2 
+        )
+        ai_reply = response.choices[0].message.content
+        
+        current_history.append({"role": "assistant", "content": ai_reply})
+        save_user_session(sender_phone, active_clinic, current_history)
+        send_whatsapp_message(sender_phone, ai_reply)
+        
+        asyncio.create_task(extract_and_save_context(sender_phone, current_history))
+            
+    except Exception as e:
+        print(f"Flow Error: {e}")
+
+# --- THE WEBHOOK RECEPTION DESK ---
 @app.post("/webhook")
 async def receive_message(request: Request):
     data = await request.json()
@@ -456,98 +543,11 @@ async def receive_message(request: Request):
                 clean_text = user_text.strip().upper()
                 print(f"\n[OWNER TESTING] {sender_phone}: {user_text}")
 
-                # --- SECRET RESET COMMAND ---
-                if clean_text == "RESET":
-                    await delete_user_session(sender_phone)
-                    reset_reply = "System Memory Cleared from Database! Fresh test started. Scan a QR code or type a DEMO keyword to begin again."
-                    send_whatsapp_message(sender_phone, reset_reply)
-                    return {"status": "reset_success"}
-                
-                # --- SECRET GOD MODE TRIGGER ---
-                if clean_text == "TEST":
-                    print("\n[GOD MODE] Forcing scheduler script to run RIGHT NOW...")
-                    try:
-                        check_and_send_followups() 
-                        send_whatsapp_message(sender_phone, "⚙️ Trigger fired! Check Render logs.")
-                    except Exception as e:
-                        print(f"[CRITICAL ERROR in Follow-Up Function]: {e}")
-                        send_whatsapp_message(sender_phone, f"Error: {e}")
-                    return {"status": "test_triggered"}
-                
-                # --- PHASE 1: SEAMLESS QR CODE INITIATION ---
-                detected_clinic = None
-                if "DEMO_MATHURAJMER" in clean_text:
-                    detected_clinic = "MATHUR_AJMER"
-                elif "DEMO_SHARMADELHI" in clean_text:
-                    detected_clinic = "SHARMA_DELHI"
-                elif "BOOK A CONSULTATION AT SKIN111" in clean_text:
-                    detected_clinic = "skin111"
-                if detected_clinic:
-                    clinic_data = await get_clinic_data(detected_clinic)
-                    if not clinic_data:
-                        send_whatsapp_message(sender_phone, "Error: Clinic not found in database.")
-                        return {"status": "clinic_not_found"}
-
-                    new_history = [
-                        {"role": "system", "content": clinic_data['system_instruction']},
-                        {"role": "user", "content": "Hi"}
-                    ]
-                    
-                    loop = asyncio.get_event_loop()
-                    await loop.run_in_executor(None, update_sales_tracker, sender_phone, detected_clinic)
-                    
-                    try:
-                        response = await client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=new_history,
-                            temperature=0.2 
-                        )
-                        ai_reply = response.choices[0].message.content
-                        print(f"[AI FIRST GREETING]: {ai_reply}")
-                        
-                        new_history.append({"role": "assistant", "content": ai_reply})
-                        await save_user_session(sender_phone, detected_clinic, new_history)
-                        send_whatsapp_message(sender_phone, ai_reply)
-                        
-                    except Exception as e:
-                        print(f"OpenAI Error on First Contact: {e}")
-                        
-                    return {"status": "demo_initialized"}
-                
-                # --- PHASE 2: MULTI-TENANT MEMORY ---
-                active_clinic, current_history, _ = await get_user_session(sender_phone)
-                
-                if not active_clinic or not current_history:
-                    send_whatsapp_message(sender_phone, "Welcome! Please scan your clinic's custom QR code to begin the AI demo.")
-                    return {"status": "unauthorized"}
-                
-                current_history.append({"role": "user", "content": user_text})
-                
-                if len(current_history) > (MAX_HISTORY * 2 + 1):
-                    current_history = [current_history[0]] + current_history[-(MAX_HISTORY * 2):]
-                
-                loop = asyncio.get_event_loop()
-                await loop.run_in_executor(None, update_sales_tracker, sender_phone, active_clinic)
-                
-                try:
-                    response = await client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=current_history,
-                        temperature=0.2 
-                    )
-                    ai_reply = response.choices[0].message.content
-                    print(f"[AI REPLY]: {ai_reply}")
-                    
-                    current_history.append({"role": "assistant", "content": ai_reply})
-                    await save_user_session(sender_phone, active_clinic, current_history)
-                    send_whatsapp_message(sender_phone, ai_reply)
-                    
-                    asyncio.create_task(extract_and_save_context(sender_phone, current_history))
-                    
-                except Exception as e:
-                    print(f"OpenAI Error: {e}")
+                # Pass the heavy lifting to the background so Meta doesn't timeout
+                asyncio.create_task(run_bot_flow(sender_phone, user_text, clean_text))
                 
     except KeyError:
         pass
         
+    # Meta instantly receives its 200 OK, preventing all spam loops
     return {"status": "success"}
