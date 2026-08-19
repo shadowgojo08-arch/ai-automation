@@ -440,11 +440,12 @@ async def health_check():
     return {"status": "healthy", "timestamp": str(datetime.now())}
 
 # --- THE BACKGROUND PROCESSOR ---
+# --- THE BACKGROUND PROCESSOR ---
 async def run_bot_flow(sender_phone, user_text, clean_text):
     try:
         # --- SECRET RESET COMMAND ---
         if clean_text == "RESET":
-            delete_user_session(sender_phone)
+            await delete_user_session(sender_phone)
             reset_reply = "System Memory Cleared from Database! Fresh test started. Scan a QR code or type a DEMO keyword to begin again."
             send_whatsapp_message(sender_phone, reset_reply)
             return 
@@ -469,7 +470,8 @@ async def run_bot_flow(sender_phone, user_text, clean_text):
             detected_clinic = "skin111"
         
         if detected_clinic:
-            clinic_data = get_clinic_data(detected_clinic)
+            # FIXED: Added 'await' so Python waits for the DB
+            clinic_data = await get_clinic_data(detected_clinic)
             if not clinic_data:
                 send_whatsapp_message(sender_phone, "Error: Clinic not found in database.")
                 return 
@@ -490,12 +492,14 @@ async def run_bot_flow(sender_phone, user_text, clean_text):
             ai_reply = response.choices[0].message.content
             
             new_history.append({"role": "assistant", "content": ai_reply})
-            save_user_session(sender_phone, detected_clinic, new_history)
+            # FIXED: Added 'await'
+            await save_user_session(sender_phone, detected_clinic, new_history)
             send_whatsapp_message(sender_phone, ai_reply)
             return 
         
         # --- PHASE 2: MULTI-TENANT MEMORY ---
-        active_clinic, current_history, _ = get_user_session(sender_phone)
+        # FIXED: Added 'await'
+        active_clinic, current_history, _ = await get_user_session(sender_phone)
         
         if not active_clinic or not current_history:
             send_whatsapp_message(sender_phone, "Welcome! Please scan your clinic's custom QR code to begin the AI demo.")
@@ -517,7 +521,8 @@ async def run_bot_flow(sender_phone, user_text, clean_text):
         ai_reply = response.choices[0].message.content
         
         current_history.append({"role": "assistant", "content": ai_reply})
-        save_user_session(sender_phone, active_clinic, current_history)
+        # FIXED: Added 'await'
+        await save_user_session(sender_phone, active_clinic, current_history)
         send_whatsapp_message(sender_phone, ai_reply)
         
         asyncio.create_task(extract_and_save_context(sender_phone, current_history))
