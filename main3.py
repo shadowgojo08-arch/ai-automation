@@ -369,7 +369,14 @@ def check_and_send_followups():
                 conn.close()
 
                 # Adjust Prompt to fake the passage of time for the demo
-                ai_prompt = f"You are the AI receptionist for {clinic_name}. Write a friendly, empathetic 2-sentence WhatsApp follow-up to a patient/client who inquired about '{patient_context}'. Pretend that 3 days have passed since they last messaged. Ask if they are still experiencing the issue and offer to get them slotted in today."
+                ai_prompt = (
+                    f"You are the AI receptionist for premium medspa or clinic named {clinic_name}. Write a friendly, empathetic 2-sentence WhatsApp follow-up "
+                    f"to a patient. Their inquiry details (and potentially their name) are: '{patient_context}'. "
+                    f"Pretend 3 days have passed since they last messaged. Ask if they are still experiencing the issue and "
+                    f"offer to book them an appointment at our medspa/clinic today. "
+                    f"CRITICAL INSTRUCTION: If there is a name in the context, it is the PATIENT'S/clients name, NOT the doctor's. "
+                    
+                )
                 
                 res = sync_client.chat.completions.create(
                     model="gpt-4o-mini",
