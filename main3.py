@@ -347,7 +347,7 @@ def check_and_send_followups():
             row_num = i + 2
             
             # --- "DAY 3" FAST-FORWARD TRIGGER (Runs at 3 Hours) ---
-            if minutes_passed >= 3 and status == "Started":
+            if hours_passed >= 3 and status == "Started":
                 print(f"-> GENERATING CUSTOM 'DAY 3' FOLLOW-UP FOR: {phone}")
                 
                 import psycopg2
@@ -434,7 +434,7 @@ def send_whatsapp_message(to_phone, text_body):
 def start_scheduler():
     scheduler = BackgroundScheduler(timezone=ZoneInfo("Asia/Dubai"))
     # NEW LOGIC: Runs every 15 minutes to constantly check for leads hitting the 3hr or 5hr mark
-    scheduler.add_job(check_and_send_followups, 'interval', minutes=1) 
+    scheduler.add_job(check_and_send_followups, 'interval', minutes=15) 
     scheduler.start()
 
 # --- WEBHOOK ENDPOINTS ---
